@@ -2,16 +2,26 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TicketController;
+use App\Http\Controllers\Api\AuthController;
 
 Route::get('/health', fn () => response()->json(['ok' => true]));
 
-Route::get('/tickets', [TicketController::class, 'index']);
-Route::post('/tickets', [TicketController::class, 'store']);
-Route::patch('/tickets/{ticket}', [TicketController::class, 'update']);
-Route::delete('/tickets/{ticket}', [TicketController::class, 'destroy']);
+Route::prefix('auth')->group(function () {
+	Route::post('/register', [AuthController::class, 'register']);
+	Route::post('/login', [AuthController::class, 'login']);
+	Route::post('/logout', [AuthController::class, 'logout']);
+	Route::get('/me', [AuthController::class, 'me']);
+});
 
-Route::get('/tickets/{ticket}', [TicketController::class, 'show']);
+Route::middleware('auth:sanctum')->group(function () {
+	Route::get('/tickets', [TicketController::class, 'index']);
+	Route::post('/tickets', [TicketController::class, 'store']);
+	Route::patch('/tickets/{ticket}', [TicketController::class, 'update']);
+	Route::delete('/tickets/{ticket}', [TicketController::class, 'destroy']);
 
-Route::post('/tickets/{ticket}/ai-summary', [TicketController::class, 'aiSummary']);
-Route::post('/tickets/{ticket}/ai-reply', [TicketController::class, 'aiReply']);
-Route::post('/tickets/{ticket}/ai-priority', [TicketController::class, 'aiPriority']);
+	Route::get('/tickets/{ticket}', [TicketController::class, 'show']);
+
+	Route::post('/tickets/{ticket}/ai-summary', [TicketController::class, 'aiSummary']);
+	Route::post('/tickets/{ticket}/ai-reply', [TicketController::class, 'aiReply']);
+	Route::post('/tickets/{ticket}/ai-priority', [TicketController::class, 'aiPriority']);
+});

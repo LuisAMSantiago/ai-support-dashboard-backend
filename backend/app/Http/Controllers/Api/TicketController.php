@@ -12,13 +12,16 @@ use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
-    public function __construct(private readonly AiTicketServiceInterface $ai) {}
+    public function __construct(private readonly AiTicketServiceInterface $ai)
+    {
+        $this->authorizeResource(Ticket::class, 'ticket');
+    }
 
     public function index(Request $request)
     {
         $perPage = min((int) $request->query('per_page', 15), 100);
 
-        $query = Ticket::query();
+        $query = Ticket::where('created_by', auth()->id());
 
         if ($status = $request->query('status')) {
             $query->where('status', $status);
@@ -52,7 +55,10 @@ class TicketController extends Controller
 
     public function store(StoreTicketRequest $request)
     {
-        $ticket = Ticket::create($request->validated());
+        $data = $request->validated();
+        $data['created_by'] = auth()->id();
+
+        $ticket = Ticket::create($data);
 
         return (new TicketResource($ticket))
             ->response()

@@ -12,6 +12,7 @@ class Ticket extends Model
     protected $fillable = [
         'title',
         'description',
+        'created_by',
         'ai_summary',
         'ai_suggested_reply',
         'priority',
@@ -23,6 +24,12 @@ class Ticket extends Model
     protected $casts = [
         'closed_at' => 'datetime',
         'assigned_to' => 'integer',
+        'created_by' => 'integer',
     ];
+
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
 }
