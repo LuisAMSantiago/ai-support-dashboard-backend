@@ -15,5 +15,14 @@ class Ticket extends Model
         'ai_summary',
         'ai_suggested_reply',
         'priority',
+        'status',
+        'assigned_to',
+        'closed_at',
     ];
+
+    protected $casts = [
+        'closed_at' => 'datetime',
+        'assigned_to' => 'integer',
+    ];
+
 }

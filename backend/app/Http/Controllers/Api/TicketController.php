@@ -6,6 +6,7 @@ use App\Contracts\AiTicketServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
+use App\Http\Resources\TicketResource;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
 
@@ -38,19 +39,29 @@ class TicketController extends Controller
         $direction = str_starts_with($sort, '-') ? 'desc' : 'asc';
         $column = ltrim($sort, '-');
 
-        if (in_array($column, ['created_at','updated_at','priority','status'], true)) {
+        if (in_array($column, ['created_at', 'updated_at', 'priority', 'status'], true)) {
             $query->orderBy($column, $direction);
         } else {
             $query->orderBy('created_at', 'desc');
         }
 
-        return TicketResource::collection($query->paginate($perPage));
+        return TicketResource::collection(
+            $query->paginate($perPage)->appends($request->query())
+        );
     }
 
     public function store(StoreTicketRequest $request)
     {
         $ticket = Ticket::create($request->validated());
-        return response()->json($ticket, 201);
+
+        return (new TicketResource($ticket))
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    public function show(Ticket $ticket)
+    {
+        return new TicketResource($ticket);
     }
 
     public function update(UpdateTicketRequest $request, Ticket $ticket)
@@ -59,26 +70,19 @@ class TicketController extends Controller
 
         // regra: fechou -> seta closed_at; reabriu -> limpa
         if ($ticket->isDirty('status')) {
-            if ($ticket->status === 'closed') {
-                $ticket->closed_at = now();
-            } else {
-                $ticket->closed_at = null;
-            }
+            $ticket->closed_at = $ticket->status === 'closed' ? now() : null;
         }
 
         $ticket->save();
-        return response()->json($ticket);
+
+        return new TicketResource($ticket);
     }
 
     public function destroy(Ticket $ticket)
     {
         $ticket->delete();
-        return response()->noContent();
-    }
 
-    public function show(Ticket $ticket)
-    {
-        return new TicketResource($ticket);
+        return response()->noContent();
     }
 
     public function aiSummary(Ticket $ticket)
@@ -86,7 +90,7 @@ class TicketController extends Controller
         $ticket->ai_summary = $this->ai->summarize($ticket);
         $ticket->save();
 
-        return response()->json($ticket);
+        return new TicketResource($ticket);
     }
 
     public function aiReply(Ticket $ticket)
@@ -94,7 +98,7 @@ class TicketController extends Controller
         $ticket->ai_suggested_reply = $this->ai->suggestReply($ticket);
         $ticket->save();
 
-        return response()->json($ticket);
+        return new TicketResource($ticket);
     }
 
     public function aiPriority(Ticket $ticket)
@@ -102,6 +106,6 @@ class TicketController extends Controller
         $ticket->priority = $this->ai->classifyPriority($ticket);
         $ticket->save();
 
-        return response()->json($ticket);
+        return new TicketResource($ticket);
     }
 }
