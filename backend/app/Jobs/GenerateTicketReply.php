@@ -2,26 +2,37 @@
 
 namespace App\Jobs;
 
+use App\Contracts\AiTicketServiceInterface;
+use App\Models\Ticket;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 
 class GenerateTicketReply implements ShouldQueue
 {
-    use Queueable;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct()
+    public int $timeout = 30;
+    public int $tries = 3;
+
+    public function __construct(public int $ticketId) {}
+
+    public function backoff(): array
     {
-        //
+        return [5, 15, 30];
     }
 
-    /**
-     * Execute the job.
-     */
-    public function handle(): void
+    public function handle(AiTicketServiceInterface $ai): void
     {
-        //
+        $ticket = Ticket::find($this->ticketId);
+
+        if (! $ticket) {
+            return;
+        }
+
+        $ticket->ai_suggested_reply = $ai->suggestReply($ticket);
+        $ticket->save();
     }
 }

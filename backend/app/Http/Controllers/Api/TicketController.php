@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Jobs\GenerateTicketSummary;
+use App\Jobs\GenerateTicketReply;
+use App\Jobs\ClassifyTicketPriority;
 use App\Contracts\AiTicketServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTicketRequest;
@@ -93,25 +96,31 @@ class TicketController extends Controller
 
     public function aiSummary(Ticket $ticket)
     {
-        $ticket->ai_summary = $this->ai->summarize($ticket);
-        $ticket->save();
+        GenerateTicketSummary::dispatch($ticket->id);
 
-        return new TicketResource($ticket);
+        return (new TicketResource($ticket))
+            ->additional(['meta' => ['status' => 'queued', 'job' => 'summary']])
+            ->response()
+            ->setStatusCode(202);
     }
 
     public function aiReply(Ticket $ticket)
     {
-        $ticket->ai_suggested_reply = $this->ai->suggestReply($ticket);
-        $ticket->save();
+        GenerateTicketReply::dispatch($ticket->id);
 
-        return new TicketResource($ticket);
+        return (new TicketResource($ticket))
+            ->additional(['meta' => ['status' => 'queued', 'job' => 'reply']])
+            ->response()
+            ->setStatusCode(202);
     }
 
     public function aiPriority(Ticket $ticket)
     {
-        $ticket->priority = $this->ai->classifyPriority($ticket);
-        $ticket->save();
+        ClassifyTicketPriority::dispatch($ticket->id);
 
-        return new TicketResource($ticket);
+        return (new TicketResource($ticket))
+            ->additional(['meta' => ['status' => 'queued', 'job' => 'priority']])
+            ->response()
+            ->setStatusCode(202);
     }
 }
