@@ -46,7 +46,7 @@ class TicketAuthorizationTest extends TestCase
         $show = $this->getJson("/api/tickets/{$id}");
         $show->assertOk();
 
-        $index = $this->getJson('/api/tickets');
+        $index = $this->actingAs($user)->getJson('/api/tickets');
         $index->assertOk();
         $index->assertJsonCount(1, 'data');
     }

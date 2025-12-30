@@ -15,6 +15,11 @@ class Ticket extends Model
         'created_by',
         'ai_summary',
         'ai_suggested_reply',
+        'ai_summary_status',
+        'ai_reply_status',
+        'ai_priority_status',
+        'ai_last_error',
+        'ai_last_run_at',
         'priority',
         'status',
         'assigned_to',
@@ -25,6 +30,11 @@ class Ticket extends Model
         'closed_at' => 'datetime',
         'assigned_to' => 'integer',
         'created_by' => 'integer',
+        'ai_last_run_at' => 'datetime',
+        'ai_summary_status' => 'string',
+        'ai_reply_status' => 'string',
+        'ai_priority_status' => 'string',
+        'ai_last_error' => 'string',
     ];
 
     public function author()

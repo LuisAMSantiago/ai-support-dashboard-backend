@@ -24,4 +24,5 @@ Route::middleware('auth:sanctum')->group(function () {
 	Route::post('/tickets/{ticket}/ai-summary', [TicketController::class, 'aiSummary']);
 	Route::post('/tickets/{ticket}/ai-reply', [TicketController::class, 'aiReply']);
 	Route::post('/tickets/{ticket}/ai-priority', [TicketController::class, 'aiPriority']);
+	Route::get('/tickets/{ticket}/ai-status', [TicketController::class, 'aiStatus']);
 });

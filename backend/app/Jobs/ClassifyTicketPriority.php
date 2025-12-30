@@ -32,7 +32,22 @@ class ClassifyTicketPriority implements ShouldQueue
             return;
         }
 
-        $ticket->priority = $ai->classifyPriority($ticket);
+        $ticket->ai_priority_status = 'processing';
+        $ticket->ai_last_error = null;
         $ticket->save();
+
+        try {
+            $ticket->priority = $ai->classifyPriority($ticket);
+            $ticket->ai_priority_status = 'done';
+            $ticket->ai_last_run_at = now();
+            $ticket->save();
+        } catch (\Throwable $e) {
+            $ticket->ai_priority_status = 'failed';
+            $ticket->ai_last_error = $e->getMessage();
+            $ticket->ai_last_run_at = now();
+            $ticket->save();
+
+            throw $e;
+        }
     }
 }

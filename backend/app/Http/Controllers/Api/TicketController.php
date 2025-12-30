@@ -95,7 +95,11 @@ class TicketController extends Controller
     }
 
     public function aiSummary(Ticket $ticket)
-    {
+    {   
+        $ticket->ai_summary_status = 'queued';
+        $ticket->ai_last_error = null;
+        $ticket->save();
+
         GenerateTicketSummary::dispatch($ticket->id);
 
         return (new TicketResource($ticket))
@@ -106,6 +110,10 @@ class TicketController extends Controller
 
     public function aiReply(Ticket $ticket)
     {
+        $ticket->ai_reply_status = 'queued';
+        $ticket->ai_last_error = null;
+        $ticket->save();
+
         GenerateTicketReply::dispatch($ticket->id);
 
         return (new TicketResource($ticket))
@@ -116,11 +124,28 @@ class TicketController extends Controller
 
     public function aiPriority(Ticket $ticket)
     {
+        $ticket->ai_priority_status = 'queued';
+        $ticket->ai_last_error = null;
+        $ticket->save();
+
         ClassifyTicketPriority::dispatch($ticket->id);
 
         return (new TicketResource($ticket))
             ->additional(['meta' => ['status' => 'queued', 'job' => 'priority']])
             ->response()
             ->setStatusCode(202);
+    }
+
+    public function aiStatus(Ticket $ticket)
+    {
+        $this->authorize('view', $ticket);
+
+        return response()->json([
+            'ai_summary_status' => $ticket->ai_summary_status,
+            'ai_reply_status' => $ticket->ai_reply_status,
+            'ai_priority_status' => $ticket->ai_priority_status,
+            'ai_last_error' => $ticket->ai_last_error,
+            'ai_last_run_at' => $ticket->ai_last_run_at,
+        ]);
     }
 }

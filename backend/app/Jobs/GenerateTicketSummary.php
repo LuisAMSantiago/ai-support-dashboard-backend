@@ -32,7 +32,22 @@ class GenerateTicketSummary implements ShouldQueue
             return; // ticket deletado, nada a fazer
         }
 
-        $ticket->ai_summary = $ai->summarize($ticket);
+        $ticket->ai_summary_status = 'processing';
+        $ticket->ai_last_error = null;
         $ticket->save();
+
+        try {
+            $ticket->ai_summary = $ai->summarize($ticket);
+            $ticket->ai_summary_status = 'done';
+            $ticket->ai_last_run_at = now();
+            $ticket->save();
+        } catch (\Throwable $e) {
+            $ticket->ai_summary_status = 'failed';
+            $ticket->ai_last_error = $e->getMessage();
+            $ticket->ai_last_run_at = now();
+            $ticket->save();
+
+            throw $e;
+        }
     }
 }

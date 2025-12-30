@@ -32,7 +32,22 @@ class GenerateTicketReply implements ShouldQueue
             return;
         }
 
-        $ticket->ai_suggested_reply = $ai->suggestReply($ticket);
+        $ticket->ai_reply_status = 'processing';
+        $ticket->ai_last_error = null;
         $ticket->save();
+
+        try {
+            $ticket->ai_suggested_reply = $ai->suggestReply($ticket);
+            $ticket->ai_reply_status = 'done';
+            $ticket->ai_last_run_at = now();
+            $ticket->save();
+        } catch (\Throwable $e) {
+            $ticket->ai_reply_status = 'failed';
+            $ticket->ai_last_error = $e->getMessage();
+            $ticket->ai_last_run_at = now();
+            $ticket->save();
+
+            throw $e;
+        }
     }
 }
