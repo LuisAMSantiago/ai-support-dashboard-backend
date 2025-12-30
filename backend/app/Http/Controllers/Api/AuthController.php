@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller
 {
@@ -28,7 +29,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return response()->json(['user' => $user], 201);
+        return Response::apiSuccess($user, ['code' => 201]);
     }
 
     public function login(Request $request)
@@ -39,14 +40,12 @@ class AuthController extends Controller
         ]);
 
         if (! Auth::attempt($data)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+            return Response::apiError('The provided credentials are incorrect.', 422);
         }
 
         $request->session()->regenerate();
 
-        return response()->json(['user' => $request->user()]);
+        return Response::apiSuccess($request->user());
     }
 
     public function logout(Request $request)
@@ -56,11 +55,11 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return response()->json(['message' => 'Logged out']);
+        return Response::apiSuccess(['message' => 'Logged out']);
     }
 
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return Response::apiSuccess($request->user());
     }
 }
