@@ -21,7 +21,7 @@ return [
 
     'allowed_origins' => [
         'http://localhost:5173',
-        'https://24c67f4f-72da-4b0c-aace-3b435252fbd2.lovableproject.com',
+        'http://localhost:8000',
     ],
 
     'allowed_origins_patterns' => [],

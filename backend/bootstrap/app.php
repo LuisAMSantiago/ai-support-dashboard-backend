@@ -3,9 +3,6 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,13 +12,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Sanctum SPA: trata requisições do frontend como "stateful" quando vierem do domínio permitido
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            EncryptCookies::class,
-            AddQueuedCookiesToResponse::class,
-            StartSession::class,
+        ]);
+
+        // Exclude auth routes from CSRF protection
+        // These routes need to be accessible without a CSRF token for initial login/registration
+        $middleware->validateCsrfTokens(except: [
+            'api/auth/*',
+            'sanctum/csrf-cookie',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->create();
