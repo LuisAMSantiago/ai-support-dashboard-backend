@@ -10,19 +10,16 @@ class TicketPolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Global before check to allow admins in the future.
-     */
     public function before(?User $user, $ability)
     {
-        if ($user && isset($user->is_admin) && $user->is_admin) {
+        if ($user && $user->is_admin) {
             return true;
         }
     }
 
-        public function viewAny(User $user): bool
+    public function viewAny(User $user): bool
     {
-        return true; // usuário logado pode listar
+        return true;
     }
 
     public function create(User $user): bool
@@ -41,6 +38,16 @@ class TicketPolicy
     }
 
     public function delete(User $user, Ticket $ticket): bool
+    {
+        return $ticket->created_by === $user->id;
+    }
+
+    public function restore(User $user, Ticket $ticket): bool
+    {
+        return $ticket->created_by === $user->id;
+    }
+
+    public function forceDelete(User $user, Ticket $ticket): bool
     {
         return $ticket->created_by === $user->id;
     }

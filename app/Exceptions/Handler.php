@@ -7,6 +7,7 @@ use Throwable;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -25,8 +26,13 @@ class Handler extends ExceptionHandler
         if ($request->expectsJson() || $request->is('api/*')) {
             $status = 500;
             $message = 'Server Error';
+            $errors = null;
 
-            if ($exception instanceof AuthenticationException) {
+            if ($exception instanceof ValidationException) {
+                $status = 422;
+                $message = 'Validation Error';
+                $errors = $exception->errors();
+            } elseif ($exception instanceof AuthenticationException) {
                 $status = 401;
                 $message = 'Unauthenticated';
             } elseif ($exception instanceof AuthorizationException) {
@@ -48,6 +54,11 @@ class Handler extends ExceptionHandler
                 'message' => $message,
                 'code' => $status,
             ];
+
+            // Adiciona errors apenas para ValidationException
+            if ($errors !== null) {
+                $meta['errors'] = $errors;
+            }
 
             if (config('app.debug')) {
                 $meta['debug'] = [
