@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -29,7 +30,8 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return Response::apiSuccess($user, ['code' => 201]);
+        $data = (new UserResource($user))->response()->getData(true)['data'];
+        return Response::apiSuccess($data, ['code' => 201]);
     }
 
     public function login(Request $request)
@@ -45,7 +47,8 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return Response::apiSuccess($request->user());
+        $data = (new UserResource($request->user()))->response()->getData(true)['data'];
+        return Response::apiSuccess($data);
     }
 
     public function logout(Request $request)
@@ -60,6 +63,7 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return Response::apiSuccess($request->user());
+        $data = (new UserResource($request->user()))->response()->getData(true)['data'];
+        return Response::apiSuccess($data);
     }
 }

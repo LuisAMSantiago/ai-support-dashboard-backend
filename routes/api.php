@@ -15,13 +15,17 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
 	Route::get('/tickets', [TicketController::class, 'index']);
+	Route::get('/tickets/summary', [TicketController::class, 'summary']);
+	Route::get('/tickets/backlog', [TicketController::class, 'backlog']);
+	Route::get('/tickets/activity', [TicketController::class, 'activity']);
+	Route::get('/tickets/{ticket}/activity', [TicketController::class, 'ticketActivity']);
 	Route::get('/tickets/trashed', [TicketController::class, 'trashed']);
 	Route::post('/tickets', [TicketController::class, 'store']);
 	Route::patch('/tickets/{ticket}', [TicketController::class, 'update']);
 	Route::delete('/tickets/{ticket}', [TicketController::class, 'destroy']);
 
 	Route::get('/tickets/{ticket}', [TicketController::class, 'show']);
-
+	
 	Route::post('/tickets/{id}/restore', [TicketController::class, 'restore']);
 	Route::delete('/tickets/{id}/force', [TicketController::class, 'forceDelete']);
 

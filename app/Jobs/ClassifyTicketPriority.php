@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Contracts\AiTicketServiceInterface;
 use App\Models\Ticket;
+use App\Models\TicketEvent;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -37,10 +38,22 @@ class ClassifyTicketPriority implements ShouldQueue
         $ticket->save();
 
         try {
+            $oldPriority = $ticket->priority;
             $ticket->priority = $ai->classifyPriority($ticket);
             $ticket->ai_priority_status = 'done';
             $ticket->ai_last_run_at = now();
             $ticket->save();
+
+            // Registrar evento de AI concluído
+            TicketEvent::createEvent(
+                $ticket->id,
+                'ai_priority_done',
+                [
+                    'before' => $oldPriority,
+                    'after' => $ticket->priority,
+                ],
+                null // Jobs não têm usuário autenticado
+            );
         } catch (\Throwable $e) {
             $ticket->ai_priority_status = 'failed';
             $ticket->ai_last_error = $e->getMessage();

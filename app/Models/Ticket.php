@@ -68,4 +68,8 @@ class Ticket extends Model
         return $this->belongsTo(User::class, 'reopened_by');
     }
 
+    public function events()
+    {
+        return $this->hasMany(TicketEvent::class)->orderBy('created_at', 'desc');
+    }
 }
