@@ -14,12 +14,12 @@ class MockAiTicketService implements AiTicketServiceInterface
         $short = mb_substr($text, 0, 240);
         if (mb_strlen($text) > 240) $short .= '...';
 
-        return "Resumo do chamado: {$short}";
+        return "[MOCK] {$short}";
     }
 
     public function suggestReply(Ticket $ticket): string
     {
-        return "Olá! Obrigado por avisar. Para eu te ajudar mais rápido, pode confirmar: "
+        return "[MOCK] Olá! Obrigado por avisar. Para eu te ajudar mais rápido, pode confirmar: "
             . "(1) seu e-mail de acesso, (2) se o erro acontece em outro navegador/dispositivo e (3) o horário aproximado do ocorrido. "
             . "Se puder, envie um print da mensagem. Com isso eu te passo os próximos passos.";
     }

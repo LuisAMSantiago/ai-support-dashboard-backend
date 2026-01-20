@@ -27,9 +27,9 @@ Project overview and architecture: https://github.com/LuisAMSantiago/ai-support-
 2. `composer install`
 3. `php artisan key:generate`
 4. Configure the following variables in `.env`:
-    - `APP_URL=http://127.0.0.1:8000`
-    - `SANCTUM_STATEFUL_DOMAINS=localhost:5173`
-    - `SESSION_DOMAIN=localhost`
+    - `APP_URL=http://127.0.0.1`
+    - `SANCTUM_STATEFUL_DOMAINS=127.0.0.1:5173`
+    - `SESSION_DOMAIN=127.0.0.1`
     - `DB_*`
 5. `php artisan migrate --seed`
 6. `php artisan serve`
@@ -51,5 +51,24 @@ The database seed creates a test user:
 - password: `password`
 
 ## AI (mock, provider-ready architecture)
-The backend uses `App\Services\MockAiTicketService` by default.  
-To integrate a real AI provider, create a service that implements `AiTicketServiceInterface` and update the binding in `AppServiceProvider`.
+By default, the backend uses `App\Services\MockAiTicketService` when `OPENAI_API_KEY` is not set.  
+To enable the OpenAI-backed service, set these variables in `.env`:
+- `OPENAI_API_KEY=...`
+- `OPENAI_MODEL=gpt-4o-mini`
+- `OPENAI_BASE_URL=https://api.openai.com/v1/chat/completions`
+Then set this in `\config\services.php`:
+```php
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+        'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1/'),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+    ]
+
+To switch between mock and real AI:
+- stop the server and queue
+- add/remove the `#` from the beginning of the `OPENAI_API_KEY` line in .env
+- run these commands:
+- `php artisan config:clear`
+- `php artisan cache:clear`
+- `php artisan optimize:clear`
+Then restart the server and queue.

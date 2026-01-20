@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Contracts\AiTicketServiceInterface;
 use App\Services\MockAiTicketService;
+use App\Services\OpenAiTicketService;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Arr;
 
@@ -15,7 +16,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(AiTicketServiceInterface::class, MockAiTicketService::class);
+        $aiService = config('services.openai.key') ? OpenAiTicketService::class : MockAiTicketService::class;
+        $this->app->bind(AiTicketServiceInterface::class, $aiService);
     }
 
     /**

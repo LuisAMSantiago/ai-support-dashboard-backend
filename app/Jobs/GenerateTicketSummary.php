@@ -48,6 +48,7 @@ class GenerateTicketSummary implements ShouldQueue
                 $ticket->id,
                 'ai_summary_done',
                 [
+                    'summary' => $ticket->ai_summary,
                     'summary_length' => strlen($ticket->ai_summary ?? ''),
                 ],
                 null // Jobs não têm usuário autenticado
