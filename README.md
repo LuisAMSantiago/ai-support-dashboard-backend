@@ -2,8 +2,10 @@
 
 Backend API of the **AI Support Dashboard** project, responsible for authentication, ticket CRUD, AI job processing, and analytics.
 
-This repository is part of the **AI Support Dashboard** project.  
+This repository is part of the **AI Support Dashboard** project.
 Project overview and architecture: https://github.com/LuisAMSantiago/ai-support-dashboard
+
+---
 
 ## Tech Stack
 - Laravel
@@ -50,8 +52,8 @@ The database seed creates a test user:
 - email: `test@example.com`
 - password: `password`
 
-## AI (mock, provider-ready architecture)
-By default, the backend uses `App\Services\MockAiTicketService` when `OPENAI_API_KEY` is not set.  
+## AI (provider-ready architecture)
+By default, the backend uses `App\Services\MockAiTicketService` when `OPENAI_API_KEY` is not set.
 To enable the OpenAI-backed service, set these variables in `.env`:
 - `OPENAI_API_KEY=...`
 - `OPENAI_MODEL=gpt-4o-mini`
@@ -63,12 +65,10 @@ Then set this in `\config\services.php`:
         'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1/'),
         'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
     ]
+```
 
-To switch between mock and real AI:
-- stop the server and queue
-- add/remove the `#` from the beginning of the `OPENAI_API_KEY` line in .env
-- run these commands:
-- `php artisan config:clear`
-- `php artisan cache:clear`
-- `php artisan optimize:clear`
-Then restart the server and queue.
+---
+
+## Author
+
+Developed by **Luis Santiago**
